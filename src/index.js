@@ -3,13 +3,14 @@ import {
   outro,
   text,
   select,
-  confirm
+  confirm,
+  multiselect
 } from '@clack/prompts'
 import colors from 'picocolors'
 import { trytm } from '@bdsqqq/try'
 
 import { COMMIT_TYPES } from './commit-types.js'
-import { getChangeFiles, getStagedFiles, gitCommit } from './git.js'
+import { getChangeFiles, getStagedFiles, gitCommit, gitAdd } from './git.js'
 
 const [changedFiles, errorChangedFiles] = await trytm(getChangeFiles())
 const [stagedFiles, errorStagedFiles] = await trytm(getStagedFiles())
@@ -19,10 +20,15 @@ if (errorChangedFiles ?? errorStagedFiles) {
   process.exit(1)
 }
 
-if (stagedFiles.length === 0) {
-  // TODO: select the files to commit
-  outro(colors.red('Error: No hay archivos en el stage'))
-  process.exit(1)
+if (stagedFiles.length === 0 && changedFiles.length > 0) {
+  const files = await multiselect({
+    message: 'Selecciona los ficheros que quieres añadir al commit: ',
+    options: changedFiles.map(file => ({
+      value: file,
+      label: file
+    }))
+  })
+  await gitAdd({ files })
 }
 
 console.log({ changedFiles, stagedFiles })
