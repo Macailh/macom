@@ -44,7 +44,15 @@ const commitType = await select({
 })
 
 const commitMsg = await text({
-  message: `${colors.cyan('Introduce el mensaje del commit: ')} `
+  message: `${colors.cyan('Introduce el mensaje del commit: ')} `,
+  validate: (value) => {
+    if (value.length === 0) {
+      return colors.red('El mensaje no puede estar vacio')
+    }
+    if (value.length === 72) {
+      return colors.red('El mensaje del coomit no puede tener más de 72 caracteres')
+    }
+  }
 })
 
 const { emoji, release } = COMMIT_TYPES[commitType]
