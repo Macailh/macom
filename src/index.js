@@ -2,7 +2,8 @@ import {
   intro,
   outro,
   text,
-  select
+  select,
+  confirm
 } from '@clack/prompts'
 import colors from 'picocolors'
 import { trytm } from '@bdsqqq/try'
@@ -32,17 +33,38 @@ const commitType = await select({
   message: colors.cyan('Selecciona el tipo de commit: '),
   options: Object.entries(COMMIT_TYPES).map(([key, value]) => ({
     value: key,
-    label: `${value.emoji} ${key} - ${value.description}`
+    label: `${value.emoji} ${key.padEnd(8, ' ')} - ${value.description}`
   }))
 })
 
-console.log(commitType)
-
 const commitMsg = await text({
-  message: 'Introduce el mensaje del commit: ',
-  placeholder: 'Add new feature'
+  message: `${colors.cyan('Introduce el mensaje del commit: ')} `
 })
 
-console.log(commitMsg)
+const { emoji, release } = COMMIT_TYPES[commitType]
 
-outro('Commit creado con exito. Gracias por usar el asistente!')
+let breakingChange = false
+if (release) {
+  breakingChange = await confirm({
+    initialValue: false,
+    message: `${colors.cyan('¿Tiene es commit cambios que rompen la compatiblididad anterior?')}
+    ${colors.gray}('Si la respuesta es si, deberias crear un commit con el tipo "BREAKING_CHANGE" y al hacer released se publicara una version major')
+    `
+  })
+}
+
+let commit = `${emoji} ${commitType}: ${commitMsg}`
+commit = breakingChange ? `${commit} [breakingChange]` : commit
+
+const shouldContinue = await confirm({
+  initialValue: true,
+  message: `${colors.cyan('¿Quieres crear el commit con el siguiente mensaje?')}
+  ${colors.green(colors.bold(commit))} ¿Confirmas?`
+})
+
+if (!shouldContinue) {
+  outro(colors.yellow('❌ No se ha creado el commit :('))
+  process.exit(0)
+}
+
+outro('✅ Commit creado con exito. Gracias por usar el asistente!')

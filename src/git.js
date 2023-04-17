@@ -16,3 +16,8 @@ export async function getStagedFiles () {
   const { stdout } = await execAsync('git diff --cached --name-only')
   return cleanStdout(stdout)
 }
+
+export async function gitCommit ({ commit } = {}) {
+  const { stdout } = await execAsync(`git commit -m "${commit}"`)
+  return cleanStdout(stdout)
+}
