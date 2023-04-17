@@ -9,7 +9,7 @@ import colors from 'picocolors'
 import { trytm } from '@bdsqqq/try'
 
 import { COMMIT_TYPES } from './commit-types.js'
-import { getChangeFiles, getStagedFiles } from './git.js'
+import { getChangeFiles, getStagedFiles, gitCommit } from './git.js'
 
 const [changedFiles, errorChangedFiles] = await trytm(getChangeFiles())
 const [stagedFiles, errorStagedFiles] = await trytm(getStagedFiles())
@@ -66,5 +66,7 @@ if (!shouldContinue) {
   outro(colors.yellow('❌ No se ha creado el commit :('))
   process.exit(0)
 }
+
+await gitCommit({ commit })
 
 outro('✅ Commit creado con exito. Gracias por usar el asistente!')
